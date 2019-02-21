@@ -140,6 +140,43 @@ that's just a guess.
 One last note here: regardless of the IDE used, every submitted project must
 still be compilable with cmake and make./
 
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
+## Model Documentation
 
+The paths are generated with following steps.
+1. Determine target speed and target lane by looking at other vehicles
+2. Compute reference points used to fit a curve with spline
+3. Generate path way points by interpolating from the curve generated from step 2
+
+### Step 1
+
+First identify vehicles that are within 20 units of s from the ego car in all three lanes.
+If there's no car identified in front of the ego car in the same lane, then use speed limit 
+as the target speed, otherwise use the speed of the car in front. Stay in the current lane 
+if there's no car identified in front of the ego car in the same lane, otherwise change to
+an adjacent lane where no cars have been identified in front nor behind, and stay in the current
+lane if no such adjacent lane exists.
+
+### Step 2
+
+First compute reference points for fitting curve with spline. To avoid sudden change of speed and direction, 
+I use the first two points from the last path as the first two reference points. Then use three other
+points that are in the middle of the target lane identified in the last step, and 30, 60, 90 ahead of 
+the ego car in terms of s. Last use these points to fit the curve with spline.
+
+### Step 3
+
+First determine the acceleration. Use 0 as acceleration if the current speed is already close enough to the
+target speed identified in step 1, meaning the speed would exceed the target speed in 0.02 seconds. Otherwise,
+use positive max acceleration (5m/s^2) if the car needs to accelerate, or negative max acceleration if the car
+needs to slow down.
+
+Then update the speed using the acceleration. Finally, use the first two points from the last path as the first 
+two path points, then caculate another 50 points by moving x in the speed of the current speed, and interpolating
+y from the spline curve.
+
+### Possible Improvements
+
+The way in which the changing lane decision could be improved by looking beyond the adjacent lanes, so that multi-step
+decisions could be made. Also predictions of future positions of the ego car and other cars can be useful for making 
+speed and lane changing decisions. Last but not least, more sophisticated algorithms could be used to make complex
+actions, such as slow down first to let the car in the target lane pass, and then change lane.
